@@ -77,8 +77,8 @@ fun RequestPermissions() {
     val context = LocalContext.current
     val permissions = listOf(
         Manifest.permission.CAMERA,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        // Manifest.permission.READ_EXTERNAL_STORAGE
     )
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -102,7 +102,9 @@ fun RequestPermissions() {
         }
     }
 }
-
+fun hasCameraPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
@@ -154,8 +156,13 @@ fun MyApp() {
                     onDismiss = { showDialog = false },
                     onCameraClick = {
                         showDialog = false
-                        openCamera = true
-                        showImage = false
+                        if (hasCameraPermission(context)) {
+                            openCamera = true
+                            showImage = false
+                        } else {
+                            Toast.makeText(context, "Camera permission required", Toast.LENGTH_SHORT).show()
+                            // RequestPermissions()
+                        }
                     },
                     onGalleryClick = {
                         showDialog = false
