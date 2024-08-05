@@ -43,6 +43,7 @@ import android.widget.Toast
 import android.media.MediaScannerConnection
 import kotlinx.coroutines.delay
 import android.content.ContentValues
+import android.content.Intent
 import android.provider.MediaStore
 import android.graphics.Matrix
 import android.media.ExifInterface
@@ -55,56 +56,39 @@ import java.util.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.example.imagecompressor.ui.theme.AppDialog
+import com.example.imagecompressor.ui.theme.DialogButtonState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
+        // Start Ui1 activity
+        startActivity(Intent(this, Ui1::class.java))
+        // Finish MainActivity to remove it from the back stack
+        finish()
 
-            ImageCompressorTheme {
-                MyApp()
-            }
-        }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Comment the above piece of code if you want to see the original application,
+        //there are some functions in MainActivity that are being used in Ui2 so its necessary to keep MainActivity
+        // uncomment the code snippet below and comment the above one
+//        super.onCreate(savedInstanceState)
+//        enableEdgeToEdge()
+//        setContent {
+//            ImageCompressorTheme {
+//                MyApp()
+//            }
+//        }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 }
 
-@Composable
-fun RequestPermissions() {
-    val context = LocalContext.current
-    val permissions = listOf(
-        Manifest.permission.CAMERA,
-        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        // Manifest.permission.READ_EXTERNAL_STORAGE
-    )
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionsGranted ->
-        permissionsGranted.entries.forEach {
-            if (!it.value) {
-                Toast.makeText(context, "${it.key} permission denied", Toast.LENGTH_SHORT).show()
-            }
-            // Show the dialog again to request permissions
-
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val missingPermissions = permissions.filter {
-            ContextCompat.checkSelfPermission(context, it) != PermissionChecker.PERMISSION_GRANTED
-        }
-        if (missingPermissions.isNotEmpty()) {
-            permissionLauncher.launch(missingPermissions.toTypedArray())
-        }
-    }
-}
-fun hasCameraPermission(context: Context): Boolean {
-    return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED
-}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
@@ -117,8 +101,10 @@ fun MyApp() {
     var isLoading by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf(0f) }
     var showImage by remember { mutableStateOf(true) }
+    var showRequestPermissions by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    RequestPermissions()
+
+//    RequestPermissions()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
@@ -128,7 +114,6 @@ fun MyApp() {
                 .padding(innerPadding)
         ) {
            if (showImage) {
-
                Image(
                    painter = painterResource(id = R.drawable.titleimage), // Your image resource
                    contentDescription = "Title Image", // Describe the image
@@ -138,39 +123,73 @@ fun MyApp() {
                )
 
            }
-
-
-            FloatingActionButton(
-                onClick = {
-                            showDialog = true
-                          },
+            Row(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Image")
+                    .fillMaxWidth()
+            ){
+                Column (
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(70.dp)
+                ){
+                    ButtonThatOpensExperimentalActivity(text = "Go to Experimental Activity", onClick = { /*TODO*/ })
+                }
+                Column (
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(70.dp)
+                ){
+                    ButtonThatOpensUi1(text = "UI 1", onClick = { /*TODO*/ })
+                }
+
             }
 
+
             if (showDialog) {
-                DialogChooser(
-                    onDismiss = { showDialog = false },
-                    onCameraClick = {
+                AppDialog(title = "Choose an option",
+                    onNegativeClick = {   //onNegative click opens camera
                         showDialog = false
                         if (hasCameraPermission(context)) {
                             openCamera = true
                             showImage = false
                         } else {
-                            Toast.makeText(context, "Camera permission required", Toast.LENGTH_SHORT).show()
-                            // RequestPermissions()
+                            showRequestPermissions = true
+                            Toast.makeText(
+                                context,
+                                "Camera permission required",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            //RequestPermissions()
                         }
                     },
-                    onGalleryClick = {
+                    onPositiveClick = {  // onPositiveClick opens the gallery
                         showDialog = false
                         openGallery = true
                         showImage = false
-                    }
+                    },
+
+                    buttonState = DialogButtonState.BOTH
                 )
             }
+//                DialogChooser(
+//                    onDismiss = { showDialog = false },
+//                    onCameraClick = {
+//                        showDialog = false
+//                        if (hasCameraPermission(context)) {
+//                            openCamera = true
+//                            showImage = false
+//                        } else {
+//                            showRequestPermissions = true
+//                            Toast.makeText(context, "Camera permission required", Toast.LENGTH_SHORT).show()
+//                            //RequestPermissions()
+//                        }
+//                    },
+//                    onGalleryClick = {
+//                        showDialog = false
+//                        openGallery = true
+//                        showImage = false
+//                    }
+//                )
 
             if (openGallery) {
                 OpenGallery { uri ->
@@ -184,7 +203,10 @@ fun MyApp() {
                     progress = 0f
                 }
             }
-
+            if (showRequestPermissions){
+                RequestPermissions()
+                showRequestPermissions = false
+            }
             if (openCamera) {
                 OpenCamera { uri ->
                     selectedImageUri = uri
@@ -316,32 +338,29 @@ fun MyApp() {
                     }
                 }
             }
+            FloatingActionButton(
+                onClick = {
+                    showDialog = true
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Image")
+            }
         }
     }
 }
 
+
+
+
+@Preview(showBackground = true)
 @Composable
-fun ImageSizeInfo(uri: Uri) {
-    val context = LocalContext.current
-    val fileSizeInBytes by remember(uri) {
-        mutableStateOf(getFileSizeInBytes(context, uri))
+fun MyAppPreview() {
+    ImageCompressorTheme {
+        MyApp()
     }
-    val fileSizeInMB = fileSizeInBytes / (1024.0 * 1024.0)
-
-    Text(
-        text = "File size: %.2f MB".format(fileSizeInMB),
-        fontSize = 14.sp,
-        modifier = Modifier.padding(top = 8.dp)
-    )
-}
-
-fun getFileSizeInBytes(context: Context, uri: Uri): Long {
-    val cursor = context.contentResolver.query(uri, null, null, null, null)
-    return cursor?.use {
-        val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-        it.moveToFirst()
-        it.getLong(sizeIndex)
-    } ?: 0
 }
 
 @Composable
@@ -367,12 +386,29 @@ fun DialogChooser(
     )
 }
 
-@Preview(showBackground = true)
+
 @Composable
-fun MyAppPreview() {
-    ImageCompressorTheme {
-        MyApp()
+fun ImageSizeInfo(uri: Uri) {
+    val context = LocalContext.current
+    val fileSizeInBytes by remember(uri) {
+        mutableStateOf(getFileSizeInBytes(context, uri))
     }
+    val fileSizeInMB = fileSizeInBytes / (1024.0 * 1024.0)
+
+    Text(
+        text = "File size: %.2f MB".format(fileSizeInMB),
+        fontSize = 14.sp,
+        modifier = Modifier.padding(top = 8.dp)
+    )
+}
+
+fun getFileSizeInBytes(context: Context, uri: Uri): Long {
+    val cursor = context.contentResolver.query(uri, null, null, null, null)
+    return cursor?.use {
+        val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+        it.moveToFirst()
+        it.getLong(sizeIndex)
+    } ?: 0
 }
 
 @Composable
@@ -509,4 +545,87 @@ fun flipBitmap(bitmap: Bitmap?, horizontal: Boolean): Bitmap? {
         }
     }
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
+
+@Composable
+fun RequestPermissions() {
+    val context = LocalContext.current
+
+
+    val permissions = listOf(
+        Manifest.permission.CAMERA,
+        // Manifest.permission.WRITE_EXTERNAL_STORAGE,sdda
+        // Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsGranted ->
+        permissionsGranted.entries.forEach {
+            if (!it.value) {
+                Toast.makeText(context, "${it.key} permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // This is a key point to make sure the dialog shows every time
+    LaunchedEffect(permissions) {
+        permissionLauncher.launch(permissions.toTypedArray())
+    }
+}
+fun hasCameraPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PermissionChecker.PERMISSION_GRANTED
+}
+
+@Composable
+fun ButtonThatOpensExperimentalActivity(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    val context = LocalContext.current // Get the current context
+
+    Button(
+        modifier = modifier.fillMaxWidth(), // Adjust the button width
+        onClick = {
+            onClick()
+            // Launch ExperimentalActivity
+            val intent = Intent(context, ExperimentalActivity::class.java)
+            context.startActivity(intent)
+        },
+        enabled = enabled
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 16.sp
+        )
+    }
+}
+@Composable
+fun ButtonThatOpensUi1(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    val context = LocalContext.current // Get the current context
+
+    Button(
+        modifier = modifier.fillMaxWidth(), // Adjust the button width
+        onClick = {
+            onClick()
+            // Launch ExperimentalActivity
+            val intent = Intent(context, Ui1::class.java)
+            context.startActivity(intent)
+        },
+        enabled = enabled
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 16.sp
+        )
+    }
 }

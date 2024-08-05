@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.imagecompressor"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -59,6 +59,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material.core)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,5 +77,15 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation (libs.accompanist.permissions)
     implementation(libs.coil.kt.coil.compose)
+    implementation(libs.ui)
+    implementation(libs.androidx.material)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v231)
+    implementation(libs.androidx.activity.compose.v131)
+    implementation (libs.androidx.ui.v143)
+    implementation (libs.androidx.compose.material3.material3)
+    implementation (libs.androidx.foundation)
+    debugImplementation(libs.ui.tooling)
+    implementation(libs.ui.tooling.preview)
 
 }
