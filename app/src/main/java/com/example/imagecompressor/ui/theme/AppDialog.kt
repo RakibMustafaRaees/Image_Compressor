@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 fun AppDialog(
     modifier: Modifier = Modifier,
     title: String? = null,
-    showCloseIcon: Boolean = false,
+    showCloseIcon: Boolean = true,
     onDismissRequest: () -> Unit = { },
     onPositiveClick: () -> Unit = { },
     onNegativeClick: () -> Unit = { },
@@ -126,6 +126,7 @@ fun PrimaryButton(
         modifier = modifier.height(50.dp),
         onClick = onClick,
         enabled = enabled,
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB)), // Apply button color using the correct parameter
         shape = if (isRounded) RoundedCornerShape(8.dp) else shape,
     ) {
 
@@ -170,7 +171,7 @@ fun SecondaryButton(
         shape = shape,
         border = BorderStroke(
             width = 1.dp,
-            color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            color = if (enabled)  Color(0xFF1C8ADB) else Color(0xFF1C8ADB)
         ),
     ) {
         if (iconEnabled) {
@@ -186,7 +187,7 @@ fun SecondaryButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            color = if (enabled) Color(0xFF1C8ADB) else Color(0xFF1C8ADB)
         )
     }
 }

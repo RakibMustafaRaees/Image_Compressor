@@ -58,6 +58,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
@@ -261,7 +262,8 @@ fun MyApp() {
                             },
                             modifier = Modifier
                                 .padding(16.dp)
-                                .fillMaxWidth()
+                                .fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB)),
                         ) {
                             Text("Compress")
                         }
@@ -398,7 +400,8 @@ fun ImageSizeInfo(uri: Uri) {
     Text(
         text = "File size: %.2f MB".format(fileSizeInMB),
         fontSize = 14.sp,
-        modifier = Modifier.padding(top = 8.dp)
+        modifier = Modifier.padding(top = 8.dp, start = 10.dp),
+        color = Color.White
     )
 }
 

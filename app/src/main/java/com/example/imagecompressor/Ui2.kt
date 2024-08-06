@@ -1,8 +1,10 @@
 package com.example.imagecompressor
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -15,6 +17,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -104,6 +108,9 @@ fun ImageOptimizerScreen() {
     val context = LocalContext.current
     var screen by remember { mutableStateOf(true) }
 
+    BackHandler(enabled = showDialog) {
+        showDialog = false
+    }
 
     Column(
         modifier = Modifier
@@ -113,9 +120,17 @@ fun ImageOptimizerScreen() {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(6.dp))
-        if (screen){ LogoAndMenu()}
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        LogoAndMenu(
+            onLogoClick = {
+                Log.d("LogoandMenu","Logo Clicked")
+                Toast.makeText(context,"Compressify", Toast.LENGTH_SHORT).show() },
+            onMenuClick = {
+                Log.d("LogoandMenu","Menu Clicked")
+                Toast.makeText(context,"Feature Coming Soon", Toast.LENGTH_SHORT).show() }
+        )
+        if (screen){ }
+        Spacer(modifier = Modifier.height(14.dp))
         if (screen){Title()}
         Spacer(modifier = Modifier.height(16.dp))
         if (screen){UploadBox { showDialog = true }}
@@ -186,8 +201,10 @@ fun ImageOptimizerScreen() {
             screen  = false
             Column(
                 modifier = Modifier
+                    .padding(top = 63.dp)
                     .size(height = 250.dp, width = 400.dp)
             ) {
+
                 Card(
                     modifier = Modifier
                         .padding(top = 16.dp)
@@ -211,17 +228,55 @@ fun ImageOptimizerScreen() {
             Column(
                 modifier = Modifier
             ) {
-                Button(
-                    onClick = {
-                        isLoading = true
-                        progress = 0f
-                    },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text("Compress")
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)){
+                    Button(
+                        onClick = {
+                            isLoading = true
+                            progress = 0f
+                        },
+                        modifier = Modifier
+                            .weight(2f)
+                            .padding(end = 2.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB)),
+
+                        ) {
+                        Text("Compress")
+                    }
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Button(
+                        onClick = {
+
+                                showDialog = true
+//                            val intent = Intent(context, Ui2::class.java)
+//                            context.startActivity(intent)
+//                            (context as? Activity)?.finish()
+                        },
+
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+
+                        modifier = Modifier
+                            .weight(1.25f)
+                            .padding(start = 2.dp),
+                    ) {
+                        Text("Change Image", color = Color(0xFF1C8ADB))
+                    }
                 }
+
+//                Button(
+//                    onClick = {
+//                        isLoading = true
+//                        progress = 0f
+//                    },
+//                    modifier = Modifier
+//                        .padding(16.dp)
+//                        .fillMaxWidth(),
+//                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB)),
+//
+//                    ) {
+//                    Text("Compress")
+//                }
 
                 if (isLoading) {
                     LaunchedEffect(Unit) {
@@ -280,27 +335,54 @@ fun ImageOptimizerScreen() {
                         Text(
                             text = "Compressed size: %.2f MB".format(compressedImageSize / (1024.0 * 1024.0)),
                             fontSize = 14.sp,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 8.dp, start = 10.dp),
+                            color = Color.White
                         )
-                        Button(
-                            onClick = { saveCompressedImage(context, bitmap) },
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Text("Download Compressed Image")
+                        Row {
+                            Button(
+                                onClick = { saveCompressedImage(context, bitmap) },
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .padding(end = 2.dp),
+                                    //.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB)),
+                            ) {
+                                Text("Download Image")
+                            }
+                            Button(onClick = {
+                                //val context = LocalContext.current
+                                val intent = Intent(context, Ui2::class.java)
+                                context.startActivity(intent)
+                                (context as? Activity)?.finish() },
+
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+
+                                modifier = Modifier
+                                    .weight(1.25f)
+                                    .padding(start = 2.dp),
+                                    //.fillMaxWidth(),
+                            ) {
+                                Text("Back", color = Color(0xFF1C8ADB))
+                            }
+
                         }
+
                     }
-                    screen = true
+
                 }
             }
+
+
         }
     }
 }
 
 
 @Composable
-fun LogoAndMenu() {
+fun LogoAndMenu(
+    onLogoClick: () -> Unit,
+    onMenuClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -308,18 +390,29 @@ fun LogoAndMenu() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.comp), // Replace with your logo resource ID
-            contentDescription = null,
+        Box(
             modifier = Modifier
                 .size(63.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.baseline_menu_24), // Replace with your menu icon resource ID
-            contentDescription = null,
+                .clickable { onLogoClick() } // Make the logo clickable
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.comp), // Replace with your logo resource ID
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Box(
             modifier = Modifier
                 .size(35.dp)
-        )
+                .clickable { onMenuClick() } // Make the menu icon clickable
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.baseline_menu_24), // Replace with your menu icon resource ID
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 

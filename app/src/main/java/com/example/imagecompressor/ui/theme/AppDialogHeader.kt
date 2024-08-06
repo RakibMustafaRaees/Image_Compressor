@@ -29,6 +29,8 @@ import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.example.imagecompressor.R
+import androidx.activity.compose.BackHandler
+
 
 //import com.isaacsufyan.coreui.R
 //import com.isaacsufyan.coreui.reusable.AppCard
@@ -41,6 +43,10 @@ fun AppDialogHeader(
     content:
     @Composable BoxScope.() -> Unit,
 ) {
+//    BackHandler(enabled = true) {
+//        onDismissRequest()
+//    }
+
 
     Dialog(
         onDismissRequest = onDismissRequest
@@ -68,12 +74,12 @@ fun AppDialogHeader(
                         if (showCloseIcon) {
                             IconButton(
                                 modifier = Modifier
-                                    .size(14.dp)
+                                    .size(24.dp)
                                     .align(Alignment.End),
                                 onClick = onDismissRequest,
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.bitcoin),
+                                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                                     contentDescription = "Close",
                                 )
                             }
@@ -90,7 +96,6 @@ fun AppDialogHeader(
         }
     }
 }
-
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
