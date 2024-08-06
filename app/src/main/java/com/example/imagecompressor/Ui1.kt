@@ -58,7 +58,7 @@ fun WelcomeScreen(onNextClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "WELCOME TO THE\nULTIMATE IMAGE OPTIMIZER",
+                text = "WELCOME TO COMPRESSIFY\nULTIMATE IMAGE OPTIMIZER",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
                     fontSize = 24.sp,

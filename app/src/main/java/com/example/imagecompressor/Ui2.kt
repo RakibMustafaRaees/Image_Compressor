@@ -108,9 +108,9 @@ fun ImageOptimizerScreen() {
     val context = LocalContext.current
     var screen by remember { mutableStateOf(true) }
 
-    BackHandler(enabled = showDialog) {
-        showDialog = false
-    }
+//    BackHandler(enabled = showDialog) {
+//        showDialog = false
+//    }
 
     Column(
         modifier = Modifier
@@ -120,11 +120,11 @@ fun ImageOptimizerScreen() {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         LogoAndMenu(
             onLogoClick = {
                 Log.d("LogoandMenu","Logo Clicked")
-                Toast.makeText(context,"Compressify", Toast.LENGTH_SHORT).show() },
+                Toast.makeText(context,"Image Optimizer", Toast.LENGTH_SHORT).show() },
             onMenuClick = {
                 Log.d("LogoandMenu","Menu Clicked")
                 Toast.makeText(context,"Feature Coming Soon", Toast.LENGTH_SHORT).show() }
@@ -138,6 +138,7 @@ fun ImageOptimizerScreen() {
         if (screen){Description()}
     }
     if (showDialog) {
+
         AppDialog(title = "Choose an option",
             onNegativeClick = {   //onNegative click opens camera
                 showDialog = false
@@ -159,7 +160,8 @@ fun ImageOptimizerScreen() {
                 openGallery = true
                 showImage = false
             },
-
+            onDismissRequest = { showDialog = false }, // Ensure dialog is dismissed
+            onClose = { showDialog = false }, // Ensure dialog is dismissed
             buttonState = DialogButtonState.BOTH
         )
     }
@@ -392,11 +394,11 @@ fun LogoAndMenu(
     ) {
         Box(
             modifier = Modifier
-                .size(63.dp)
+                .size(90.dp)
                 .clickable { onLogoClick() } // Make the logo clickable
         ) {
             Image(
-                painter = painterResource(id = R.drawable.comp), // Replace with your logo resource ID
+                painter = painterResource(id = R.drawable.imageoptimizerlogo), // Replace with your logo resource ID
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize()
             )
@@ -496,7 +498,7 @@ fun AppDialog(
 ) {
     AppDialogHeader(
         modifier = modifier,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {Log.e("GOT here","")},
         showCloseIcon = showCloseIcon
     ) {
         Column(
@@ -554,8 +556,10 @@ fun AppDialog(
                 }
                 DialogButtonState.NONE -> {}
             }
+            //onDismissRequest()
             Spacer(modifier = Modifier.height(8.dp))
         }
+        //onDismissRequest()
     }
 }
 

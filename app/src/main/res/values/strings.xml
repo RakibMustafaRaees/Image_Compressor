@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ImageCompressor</string>
+    <string name="app_name">Image Optimizer</string>
     <string name="coreui_close">close</string>
     <string name="coreui_procced">proceed\n</string>
     <string name="gallery">Gallery</string>

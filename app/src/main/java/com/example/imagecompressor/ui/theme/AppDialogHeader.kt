@@ -1,6 +1,7 @@
 package com.example.imagecompressor.ui.theme
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -32,21 +33,17 @@ import com.example.imagecompressor.R
 import androidx.activity.compose.BackHandler
 
 
-//import com.isaacsufyan.coreui.R
-//import com.isaacsufyan.coreui.reusable.AppCard
-//import com.isaacsufyan.coreui.theme.AppTheme
 @Composable
 fun AppDialogHeader(
     modifier: Modifier = Modifier,
     showCloseIcon: Boolean = true,
-    onDismissRequest: () -> Unit = { },
+    onDismissRequest: () -> Unit = {},
     content:
     @Composable BoxScope.() -> Unit,
 ) {
-//    BackHandler(enabled = true) {
-//        onDismissRequest()
-//    }
 
+    // Added BackHandler to handle back button press
+  //  BackHandler(onBack = onDismissRequest)
 
     Dialog(
         onDismissRequest = onDismissRequest

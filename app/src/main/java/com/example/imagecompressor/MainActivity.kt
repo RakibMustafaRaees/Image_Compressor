@@ -148,6 +148,7 @@ fun MyApp() {
 
             if (showDialog) {
                 AppDialog(title = "Choose an option",
+                    onClose = {Log.d("TAG","test")},
                     onNegativeClick = {   //onNegative click opens camera
                         showDialog = false
                         if (hasCameraPermission(context)) {

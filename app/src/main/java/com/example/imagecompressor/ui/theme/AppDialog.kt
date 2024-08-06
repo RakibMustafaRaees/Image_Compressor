@@ -1,4 +1,7 @@
 package com.example.imagecompressor.ui.theme
+
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
@@ -34,13 +37,22 @@ fun AppDialog(
     onDismissRequest: () -> Unit = { },
     onPositiveClick: () -> Unit = { },
     onNegativeClick: () -> Unit = { },
+    onClose: () -> Unit = { },
     positiveText: String = stringResource(id = R.string.gallery),
     negativeText: String = stringResource(id = R.string.camera),
     buttonState: DialogButtonState = DialogButtonState.NEGATIVE,
 ) {
+
+    // Added BackHandler to handle back button press
+ //   BackHandler(onBack = onDismissRequest)
+
     AppDialogHeader(
         modifier = modifier,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            Log.e("AppDialogHeader", "")
+            onClose()
+            onDismissRequest()
+        },
         showCloseIcon = showCloseIcon
     ) {
         Column(
@@ -109,6 +121,7 @@ fun AppDialog(
 enum class DialogButtonState {
     POSITIVE, NEGATIVE, BOTH, NONE
 }
+
 //@Preview
 @Composable
 fun PrimaryButton(
@@ -153,6 +166,7 @@ fun PrimaryButton(
         )
     }
 }
+
 //@Preview
 @Composable
 fun SecondaryButton(
@@ -171,7 +185,7 @@ fun SecondaryButton(
         shape = shape,
         border = BorderStroke(
             width = 1.dp,
-            color = if (enabled)  Color(0xFF1C8ADB) else Color(0xFF1C8ADB)
+            color = if (enabled) Color(0xFF1C8ADB) else Color(0xFF1C8ADB)
         ),
     ) {
         if (iconEnabled) {
@@ -191,6 +205,7 @@ fun SecondaryButton(
         )
     }
 }
+
 //@Preview
 @Composable
 fun Dp.toSp(): TextUnit {
