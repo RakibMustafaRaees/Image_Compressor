@@ -17,16 +17,15 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 //import androidx.compose.foundation.layout.BoxScopeInstance.align
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -35,23 +34,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,14 +54,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.PermissionChecker
@@ -83,6 +74,9 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.material.icons.Icons // Import Icons
+import androidx.compose.material.icons.filled.Share // Import Share Icon
+import androidx.compose.material3.Icon
 
 class Ui2 : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +101,7 @@ fun ImageOptimizerScreen() {
     var showRequestPermissions by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var screen by remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
 
 //    BackHandler(enabled = showDialog) {
 //        showDialog = false
@@ -116,6 +111,7 @@ fun ImageOptimizerScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1B1B1B)),
+            //.verticalScroll(scrollState),
             //.padding(1.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -199,6 +195,7 @@ fun ImageOptimizerScreen() {
                 // .align(Alignment.TopCenter)
                 .padding(top = 16.dp)
                 .padding(horizontal = 10.dp)
+                .verticalScroll(scrollState)
         ) {
             screen  = false
             Column(
@@ -366,19 +363,52 @@ fun ImageOptimizerScreen() {
                             ) {
                                 Text("Back", color = Color(0xFF1C8ADB))
                             }
-
                         }
-
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row {
+                            Button(
+                                onClick = { shareImage(context, bitmap) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C8ADB))
+                                )
+                            {
+                                Icon(
+                                    imageVector = Icons.Default.Share, // Use share icon
+                                    contentDescription = "Share",
+                                    tint = Color.White, // Set icon color
+                                    modifier = Modifier.size(20.dp) // Adjust icon size
+                                )
+                                Spacer(modifier = Modifier.width(8.dp)) // Add space between icon and text
+                                Text("Share Image")
+                            }
+                            }
+                        }
                     }
-
                 }
             }
-
-
         }
     }
-}
 
+// Function to share the image
+fun shareImage(context: Context, bitmap: Bitmap) {
+    val file = File(context.cacheDir, "shared_image.png")
+    val fos = file.outputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+    fos.close()
+
+    val uri = FileProvider.getUriForFile(context, "com.example.imagecompressor.fileprovider", file)
+
+    val shareIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_STREAM, uri)
+        type = "image/png"
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    context.startActivity(Intent.createChooser(shareIntent, "Share Image via"))
+}
 
 @Composable
 fun LogoAndMenu(
@@ -763,7 +793,7 @@ fun RequestPermissions1() {
 
     val permissions = listOf(
         Manifest.permission.CAMERA,
-        // Manifest.permission.WRITE_EXTERNAL_STORAGE,sdda
+        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
         // Manifest.permission.READ_EXTERNAL_STORAGE
     )
 
@@ -788,5 +818,11 @@ fun hasCameraPermission1(context: Context): Boolean {
         context,
         Manifest.permission.CAMERA
     ) == PermissionChecker.PERMISSION_GRANTED
+}
+
+fun isFileSizeWithinRange(context: Context, uri: Uri, minSizeInMB: Double, maxSizeInMB: Long): Boolean {
+    val fileSizeInBytes = getFileSizeInBytes(context, uri)
+    val fileSizeInMB = fileSizeInBytes / (1024.0 * 1024.0)
+    return fileSizeInMB >= minSizeInMB && fileSizeInMB <= maxSizeInMB
 }
 

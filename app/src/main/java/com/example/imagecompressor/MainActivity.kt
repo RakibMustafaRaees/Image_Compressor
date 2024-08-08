@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.*
 import coil.compose.rememberImagePainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import android.provider.OpenableColumns
 import android.content.Context
@@ -37,10 +34,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import androidx.compose.ui.graphics.asImageBitmap
 import android.widget.Toast
-import android.media.MediaScannerConnection
 import kotlinx.coroutines.delay
 import android.content.ContentValues
 import android.content.Intent
@@ -53,15 +48,9 @@ import androidx.core.content.PermissionChecker
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import coil.compose.rememberImagePainter
 import com.example.imagecompressor.ui.theme.AppDialog
 import com.example.imagecompressor.ui.theme.DialogButtonState
 
@@ -417,16 +406,27 @@ fun getFileSizeInBytes(context: Context, uri: Uri): Long {
 
 @Composable
 fun OpenGallery(onImageSelected: (Uri?) -> Unit) {
+    val context = LocalContext.current
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        onImageSelected(uri)
+        if (uri != null) {
+            if (isFileSizeWithinRange(context, uri, 0.3, 7)) { // Check if the file size is within the range
+                onImageSelected(uri)
+            } else {
+                Toast.makeText(context, "Image size should be between 1MB and 7MB", Toast.LENGTH_SHORT).show()
+                onImageSelected(null) // Reset the image selection state
+            }
+        } else {
+            onImageSelected(null)
+        }
     }
 
     LaunchedEffect(Unit) {
         galleryLauncher.launch("image/*")
     }
 }
+
 
 @Composable
 fun OpenCamera(onImageCaptured: (Uri?) -> Unit) {
@@ -436,10 +436,17 @@ fun OpenCamera(onImageCaptured: (Uri?) -> Unit) {
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) {
-            onImageCaptured(imageUri)
+        if (success && imageUri != null) {
+            if (isFileSizeWithinRange(context, imageUri!!, 0.3, 7)) { // Check if the file size is within the range
+                onImageCaptured(imageUri)
+            } else {
+                Toast.makeText(context, "Image size should be between 1MB and 7MB", Toast.LENGTH_SHORT).show()
+                onImageCaptured(null) // Reset the image capture state
+                imageUri = null // Reset imageUri to ensure re-capture
+            }
         } else {
             onImageCaptured(null)
+            imageUri = null // Reset imageUri to ensure re-capture
         }
     }
 
@@ -448,6 +455,7 @@ fun OpenCamera(onImageCaptured: (Uri?) -> Unit) {
         imageUri?.let { cameraLauncher.launch(it) } // LAUNCH CAMERA ONLY IF imageUri IS NOT NULL
     }
 }
+
 
 fun createImageFile(context: Context): Uri? {
     val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
